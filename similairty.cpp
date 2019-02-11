@@ -1,6 +1,7 @@
 #pragma clang diagnostic push
-#pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
+#pragma ide diagnostic ignored "modernize-use-auto"
 #pragma ide diagnostic ignored "modernize-loop-convert"
+
 #include <vector>
 #include <c++/cmath>
 
@@ -61,7 +62,7 @@ double intersectionRec(Position* curPos, Position* prevPos,
 		std::vector<MoveStack> v1, std::vector<MoveStack> v2) {
 
 	Position *p1, *p2;
-	StateInfo st1, st2;
+	StateInfo st1, st2{};
 	double inter = 0;
 
 	for (unsigned int i = 0; i < v1.size(); i++) {
@@ -84,7 +85,6 @@ double intersectionRec(Position* curPos, Position* prevPos,
 		}
 	}
 }
-#pragma clang diagnostic pop
 
 /**
  * Wrapper method that allows to compute a similarity between 2 FEN-encoded board positions.
@@ -94,7 +94,7 @@ double intersectionRec(Position* curPos, Position* prevPos,
  * @return similarity between curPos and prevPos
  */
 template<SimMethod simMethod>
-double similarity(const std::string curFen, const std::string prevFen) {
+double similarity(const std::string &curFen, const std::string &prevFen) {
 	Position *curPos  = new Position(curFen, false, 0);
 	Position *prevPos = new Position(prevFen, false, 0);
 	return similarity<simMethod>(curPos, prevPos);
@@ -179,7 +179,7 @@ double similarity<LEGAL_MOVES>(Position* curPos, Position* prevPos) {
 /**
  * Use the intersection-to-union ratio of legal actions from each game state to obtain the similarity.
  * Further expand the tree by recursively applying the formula to action mismatches.
- * @param curPos current board steate
+ * @param curPos current board state
  * @param prevPos reference board state
  * @return similarity between curPos and prevPos
  */
