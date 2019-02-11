@@ -13,10 +13,12 @@ enum SimMethod {
 #ifndef SIMILARITY_H_
 #define SIMILARITY_H_
 
-const double CONST_SIM     = 0.5,   // param for @similarity<CONSTANT>()
-             DEFAULT_SIM   = 1.0,   // default similarity value (in case of error, insufficient data, etc.)
-             ACC_THRESHOLD = 0.6,   // threshold for accepting a recursively expanded mismatch in @similarity<REC_*>()
-             REC_INCREMENT = 1;     // value to increment the intersection if mismatch accepted in @similarity<REC_*>()
+const double DEFAULT_SIM    = 1.0,   // default similarity value (in case of error, insufficient data, etc.)
+             CONST_SIM      = 0.5,   // predefined similarity value for @similarity<CONSTANT>()
+             DEPTH_WEIGHT   = 1,     // weight factor of tree depth used for @similarity<DEPTH_BREADTH>()
+             BREADTH_WEIGHT = 1,     // weight factor of tree breadth used for @similarity<DEPTH_BREADTH>()
+             ACC_THRESHOLD  = 0.6,   // threshold for accepting a recursively expanded mismatch in @similarity<REC_*>()
+             REC_INCREMENT  = 1;     // value to increment the intersection if mismatch accepted in @similarity<REC_*>()
 
 /**
  * Calculate the similarity measure between two arbitrary board positions. If the reference position is not defined

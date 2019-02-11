@@ -1,4 +1,8 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cppcoreguidelines-pro-type-member-init"
+#pragma ide diagnostic ignored "modernize-loop-convert"
 #include <vector>
+#include <c++/cmath>
 
 #include "similarity.h"
 #include "position.h"
@@ -80,6 +84,7 @@ double intersectionRec(Position* curPos, Position* prevPos,
 		}
 	}
 }
+#pragma clang diagnostic pop
 
 /**
  * Wrapper method that allows to compute a similarity between 2 FEN-encoded board positions.
@@ -106,9 +111,24 @@ double similarity<CONSTANT>(Position* curPos, Position* prevPos) {
     return CONST_SIM;
 }
 
+/**
+ * Use the weighted sum of trees' depth difference and breadth difference to calculate the similarity.
+ * @param curPos current board state
+ * @param prevPos reference board state
+ * @return similarity between curPos and prevPos
+ */
 template<>
 double similarity<DEPTH_BREADTH>(Position* curPos, Position* prevPos) {
-	return CONST_SIM;
+	double curDepth  = curPos->startpos_ply_counter(),
+	       prevDepth = prevPos->startpos_ply_counter();
+
+	double curBreadth  = getMoves(curPos).size(),
+	       prevBreadth = getMoves(prevPos).size();
+
+	double depthComponent   = 1 - fabs(curDepth - prevDepth) / (curDepth + prevDepth),
+	       breadthComponent = 1 - fabs(curBreadth - prevBreadth) / (curBreadth + prevBreadth);
+
+	return (DEPTH_WEIGHT*depthComponent + BREADTH_WEIGHT*breadthComponent) / (DEPTH_WEIGHT + BREADTH_WEIGHT);
 }
 
 /**
@@ -269,3 +289,4 @@ double similarity<REC_EXPANDABLE_STATES>(Position* curPos, Position* prevPos) {
 	double simMismatches = intersectionRec<EXPANDABLE_STATES>(curPos, prevPos, curMoves, prevMoves);
 	return (inter + simMismatches) / uni;
 }
+#pragma clang diagnostic pop
