@@ -108,11 +108,11 @@ bool uct(Position& pos, const SearchLimits& limits){
 	double result, sim;
 
 	if (whiteToMove) {
-		sim = similarity<REC_LEGAL_MOVES>(&pos, prevPosBlanc);
+		sim = similarity<LEGAL_MOVES>(&pos, prevPosBlanc);
 		prevPosBlanc = new Position(pos,pos.thread());
 	}
 	else {
-		sim = similarity<REC_LEGAL_MOVES>(&pos, prevPosNoir);
+		sim = similarity<LEGAL_MOVES>(&pos, prevPosNoir);
 		prevPosNoir = new Position(pos,pos.thread());
 	}
 

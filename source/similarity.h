@@ -1,18 +1,19 @@
 #include "position.h"
 
-enum SimMethod {
-  CONSTANT,
-  DEPTH_BREADTH,
-  INFL_PIECES,
-  LEGAL_MOVES,
-  REC_LEGAL_MOVES,
-  EXPANDABLE_STATES,
-  REC_EXPANDABLE_STATES
-};
-
 #ifndef SIMILARITY_H_
 #define SIMILARITY_H_
 
+enum SimMethod {
+    CONSTANT,
+    DEPTH_BREADTH,
+    INFL_PIECES,
+    LEGAL_MOVES,
+    REC_LEGAL_MOVES,
+    EXPANDABLE_STATES,
+    REC_EXPANDABLE_STATES
+};
+
+/** Constants **/
 const double DEFAULT_SIM    = 1.0,   // default similarity value (in case of error, insufficient data, etc.)
              CONST_SIM      = 0.5,   // predefined similarity value for @similarity<CONSTANT>()
              DEPTH_WEIGHT   = 1,     // weight factor of tree depth used for @similarity<DEPTH_BREADTH>()

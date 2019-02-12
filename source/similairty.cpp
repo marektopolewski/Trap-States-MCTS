@@ -1,7 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "modernize-use-auto"
-#pragma ide diagnostic ignored "modernize-loop-convert"
-
 #include <vector>
 #include <c++/cmath>
 
@@ -10,82 +6,15 @@
 #include "movegen.h"
 #include "move.h"
 
-/**
- * Generate a set of legal moves from a given position and store it in a vector.
- * @param pos board state to consider
- * @return a vector of extendable moves
- */
-std::vector<MoveStack> getMoves(Position* pos) {
-	MoveStack moveList[MAX_MOVES];
-	std::vector<MoveStack> vec;
+template<SimMethod>
+double intersectionRec(Position* curPos, Position* prevPos, std::vector<MoveStack> v1, std::vector<MoveStack> v2);
+double intersection(std::vector<MoveStack> v1, std::vector<MoveStack> v2);
+std::vector<MoveStack> getMoves(Position* pos);
 
-	MoveStack *last = generate<MV_LEGAL>(*pos, moveList);
-	for (MoveStack *i = moveList; i != last; i++)
-		vec.push_back(*i);
 
-	return vec;
-}
-
-/**
- * Perform an intersection of two sets of moves and return its cardinality.
- * @param v1 first set of moves stored as a vector
- * @param v2 second set of moves stored as a vector
- * @return Size of the intersection
- */
-double intersection(std::vector<MoveStack> v1, std::vector<MoveStack> v2) {
-	double inter = 0;
-	for (unsigned int i = 0; i < v1.size(); i++) {
-		for (unsigned int j = 0; j < v2.size(); j++) {
-			if (v1[i].move == v2[j].move) {
-			    v2.erase(v2.begin()+j);		// remove matches from consideration for speed-up
-				inter++; 						// string s = move_to_uci(v2[j].move, false);
-                break;
-			}
-		}
-	}
-	return inter;
-}
-
-/**
- * Perform an intersection of two sets of moves. Mismatching moves are compared using a specified similarity measure
- * and upon exceeding a minimal similarity threshold are considered as equivalent. Return the cardinality of the union
- * of both (1) the intersection and (2) the sufficiently similar mismatches.
- * @tparam simMethod similairty method used to compare the mismatches
- * @param curPos current board state
- * @param prevPos reference board state
- * @param v1 set of mismatched moves from curPos
- * @param v2 set of mismatched moves from prevPos
- * @return sum of the intersection's size and the number similar moves
- */
-template<SimMethod simMethod>
-double intersectionRec(Position* curPos, Position* prevPos,
-		std::vector<MoveStack> v1, std::vector<MoveStack> v2) {
-
-	Position *p1, *p2;
-	StateInfo st1, st2{};
-	double inter = 0;
-
-	for (unsigned int i = 0; i < v1.size(); i++) {
-		for (unsigned int j = 0; j < v2.size(); j++) {
-			p1 = new Position(*curPos, curPos->thread());
-			p2 = new Position(*prevPos, prevPos->thread());
-			p1->do_move(v1[i].move, st1);
-			p2->do_move(v2[j].move, st2);
-
-			if (p1->get_key() == p2->get_key()) {
-				inter += REC_INCREMENT;
-				break;
-			}
-
-			double sim = similarity<simMethod>(p1, p2);
-			if (sim > ACC_THRESHOLD) {
-				inter += sim * REC_INCREMENT;
-				break;
-			}
-		}
-	}
-}
-
+///////////////////////////////////////////////////
+/// WRAPPER FUNCTIONS
+///////////////////////////////////////////////////
 /**
  * Wrapper method that allows to compute a similarity between 2 FEN-encoded board positions.
  * @tparam simMethod function used to compute the similairty
@@ -100,6 +29,9 @@ double similarity(const std::string &curFen, const std::string &prevFen) {
 	return similarity<simMethod>(curPos, prevPos);
 }
 
+///////////////////////////////////////////////////
+/// SIMILARITY MEASURES
+///////////////////////////////////////////////////
 /**
  * Use a constant value as a static similarity measure. Method employed in the final version of TA-MCTS.
  * @param curPos  (ignored) current board state
@@ -289,4 +221,83 @@ double similarity<REC_EXPANDABLE_STATES>(Position* curPos, Position* prevPos) {
 	double simMismatches = intersectionRec<EXPANDABLE_STATES>(curPos, prevPos, curMoves, prevMoves);
 	return (inter + simMismatches) / uni;
 }
-#pragma clang diagnostic pop
+
+
+///////////////////////////////////////////////////
+/// HELPER METHODS
+///////////////////////////////////////////////////
+/**
+ * Generate a set of legal moves from a given position and store it in a vector.
+ * @param pos board state to consider
+ * @return a vector of extendable moves
+ */
+std::vector<MoveStack> getMoves(Position* pos) {
+    MoveStack moveList[MAX_MOVES];
+    std::vector<MoveStack> vec;
+
+    MoveStack *last = generate<MV_LEGAL>(*pos, moveList);
+    for (MoveStack *i = moveList; i != last; i++)
+        vec.push_back(*i);
+
+    return vec;
+}
+
+/**
+ * Perform an intersection of two sets of moves and return its cardinality.
+ * @param v1 first set of moves stored as a vector
+ * @param v2 second set of moves stored as a vector
+ * @return Size of the intersection
+ */
+double intersection(std::vector<MoveStack> v1, std::vector<MoveStack> v2) {
+    double inter = 0;
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        for (unsigned int j = 0; j < v2.size(); j++) {
+            if (v1[i].move == v2[j].move) {
+                v2.erase(v2.begin()+j);		// remove matches from consideration for speed-up
+                inter++; 						// string s = move_to_uci(v2[j].move, false);
+                break;
+            }
+        }
+    }
+    return inter;
+}
+
+/**
+ * Perform an intersection of two sets of moves. Mismatching moves are compared using a specified similarity measure
+ * and upon exceeding a minimal similarity threshold are considered as equivalent. Return the cardinality of the union
+ * of both (1) the intersection and (2) the sufficiently similar mismatches.
+ * @tparam simMethod similairty method used to compare the mismatches
+ * @param curPos current board state
+ * @param prevPos reference board state
+ * @param v1 set of mismatched moves from curPos
+ * @param v2 set of mismatched moves from prevPos
+ * @return sum of the intersection's size and the number similar moves
+ */
+template<SimMethod simMethod>
+double intersectionRec(Position* curPos, Position* prevPos,
+                       std::vector<MoveStack> v1, std::vector<MoveStack> v2) {
+
+    Position *p1, *p2;
+    StateInfo st1, st2{};
+    double inter = 0;
+
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        for (unsigned int j = 0; j < v2.size(); j++) {
+            p1 = new Position(*curPos, curPos->thread());
+            p2 = new Position(*prevPos, prevPos->thread());
+            p1->do_move(v1[i].move, st1);
+            p2->do_move(v2[j].move, st2);
+
+            if (p1->get_key() == p2->get_key()) {
+                inter += REC_INCREMENT;
+                break;
+            }
+
+            double sim = similarity<simMethod>(p1, p2);
+            if (sim > ACC_THRESHOLD) {
+                inter += sim * REC_INCREMENT;
+                break;
+            }
+        }
+    }
+}
