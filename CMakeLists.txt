@@ -3,6 +3,7 @@ project(mctsf_ecplise)
 
 set(CMAKE_CXX_STANDARD 14)
 set(-DCMAKE_SH="CMAKE_SH-NOTFOUND")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 include_directories(.)
 
@@ -54,4 +55,4 @@ add_executable(mctsf_ecplise
         source/ucioption.cpp
         source/ucioption.h
         source/uctsearch.cpp
-        source/uctsearch.h test/trap_test.cpp test/trap_test.h)
+        source/uctsearch.h)

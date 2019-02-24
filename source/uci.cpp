@@ -29,6 +29,7 @@
 #include "search.h"
 #include "ucioption.h"
 #include "uctsearch.h"
+#include "similarity.h"
 
 using namespace std;
 
@@ -105,6 +106,10 @@ bool execute_uci_command(const string& cmd) {
            << "\nid author " << engine_authors()
            << "\n"           << Options.print_all()
            << "\nuciok"      << endl;
+
+  else if (token == "sim")
+      similarityTest();
+
   else
       cout << "Unknown command: " << cmd << endl;
 

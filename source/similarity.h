@@ -21,6 +21,11 @@ const double DEFAULT_SIM    = 1.0,   // default similarity value (in case of err
              ACC_THRESHOLD  = 0.6,   // threshold for accepting a recursively expanded mismatch in @similarity<REC_*>()
              REC_INCREMENT  = 1;     // value to increment the intersection if mismatch accepted in @similarity<REC_*>()
 
+const std::string EXIT_CMD   = "exit",  // commands used for similairty testing
+                  MANUAL_CMD = "man",
+                  AUTO_CMD   = "auto";
+const double CANCEL_SIM  = -999,        // impossible similarity value used to indicate termination
+             INVALID_FEN = -998;        // impossible similarity value used to indicate invalid FEN positions
 /**
  * Calculate the similarity measure between two arbitrary board positions. If the reference position is not defined
  * then the default similairty value is returned. For applicable templates see @file similairty.h.
@@ -32,12 +37,8 @@ template<SimMethod>
 double similarity(Position* curPos, Position* prevPos);
 
 /**
- * Wrapper method that allows to compute a similarity between 2 FEN-encoded board positions.
- * @tparam simMethod function used to compute the similairty
- * @param curFen current board state as FEN string
- * @param prevFen reference board state as FEN string
- * @return similarity between curPos and prevPos
+ * Method called from an UCI command to begin similairty measure testing
  */
-double similarity(std::string curFen, std::string prevFen, SimMethod method);
+void similarityTest();
 
 #endif /* SIMILARITY_H_ */
