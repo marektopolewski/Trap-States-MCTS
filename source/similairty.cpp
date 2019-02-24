@@ -222,26 +222,6 @@ double similarity<REC_EXPANDABLE_STATES>(Position* curPos, Position* prevPos) {
 /// HELPER METHODS
 ///////////////////////////////////////////////////
 /**
- * Wrapper method that allows to compute a similarity between 2 FEN-encoded board positions.
- * @tparam simMethod function used to compute the similairty
- * @param curFen current board state as FEN string
- * @param prevFen reference board state as FEN string
- * @return similarity between curPos and prevPos
- */
-template<SimMethod simMethod>
-double similarityFen(std::string curFen, std::string prevFen) {
-    Position *curPos  = new Position(curFen, false, 0);
-    Position *prevPos = new Position(prevFen, false, 0);
-
-    if (curPos->get_key()==0 || prevPos->get_key()==0) {
-        return INVALID_FEN;
-    }
-
-    double sim = similarity<simMethod>(curPos, prevPos);
-    return sim;
-}
-
-/**
  * Generate a set of legal moves from a given position and store it in a vector.
  * @param pos board state to consider
  * @return a vector of extendable moves
