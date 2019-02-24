@@ -29,7 +29,7 @@
 #include "search.h"
 #include "ucioption.h"
 #include "uctsearch.h"
-#include "similarity.h"
+#include "similarity_test.h"
 
 using namespace std;
 

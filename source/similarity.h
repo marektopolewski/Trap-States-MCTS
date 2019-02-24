@@ -37,8 +37,10 @@ template<SimMethod>
 double similarity(Position* curPos, Position* prevPos);
 
 /**
- * Method called from an UCI command to begin similairty measure testing
+ * Generate all legal moves from a recorded position
+ * @param pos pointer to the position to be investigated
+ * @return vector of MoveStack objects
  */
-void similarityTest();
+std::vector<MoveStack> getMoves(Position* pos);
 
 #endif /* SIMILARITY_H_ */

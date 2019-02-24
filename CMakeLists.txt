@@ -55,4 +55,4 @@ add_executable(mctsf_ecplise
         source/ucioption.cpp
         source/ucioption.h
         source/uctsearch.cpp
-        source/uctsearch.h)
+        source/uctsearch.h source/similarity_test.cpp source/similarity_test.h)
