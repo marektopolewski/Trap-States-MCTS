@@ -107,6 +107,9 @@ bool execute_uci_command(const string& cmd) {
            << "\n"           << Options.print_all()
            << "\nuciok"      << endl;
 
+  else if (token == "trap")
+      cout << (isTrap(&pos) ? "trap found" : "no trap") << endl;
+
   else if (token == "sim")
       similarityTest();
 

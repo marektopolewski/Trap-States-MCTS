@@ -94,6 +94,8 @@ double similarity<LEGAL_MOVES>(Position* curPos, Position* prevPos) {
 	std::vector<MoveStack> curMoves  = getMoves(curPos),
                            prevMoves = getMoves(prevPos);
 
+	if (curMoves.size()==0 && prevMoves.size()==0) return 1.0;
+
 	double uni = curMoves.size() + prevMoves.size();
 	double inter = intersection(curMoves, prevMoves);
 	uni = uni - inter;
@@ -133,7 +135,7 @@ double similarity<REC_LEGAL_MOVES>(Position* curPos, Position* prevPos) {
     }
 
     double simMismatches = intersectionRec<LEGAL_MOVES>(curPos, prevPos, curMoves, prevMoves);
-	uni = uni - inter - simMismatches;
+	uni = uni - inter;
 	return (inter + simMismatches) / uni;
 }
 

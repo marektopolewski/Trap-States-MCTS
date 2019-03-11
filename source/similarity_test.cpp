@@ -5,10 +5,10 @@
 #include <fstream>
 #include <ctime>
 #include <regex>
+#include <direct.h>
 
 #include "similarity_test.h"
 #include "similarity.h"
-#include "position.h"
 #include "movegen.h"
 #include "move.h"
 
@@ -129,7 +129,7 @@ void manTest() {
             getline(std::cin, fen2);
 
             sim = simFromKey(key, fen1, fen2);
-            if (sim == INVALID_FEN) break;
+            break;
         }
     }
 
@@ -139,27 +139,36 @@ void manTest() {
 
 void childTest() {
     std::ifstream testFile;
-    std::ofstream resultFile;
-    std::string resultName = "..\\test\\result_child_" + getTimeStamp() + ".csv";
-
     testFile.open("..\\test\\child_test_set.in");
-    resultFile.open(resultName);
-
-    if (!testFile || !resultFile) {
-        std::cout << "[ERROR] Unable to open the required file(s)." ;
+    if (!testFile ) {
+        std::cout << "[ERROR] Unable to open the input file(s)." ;
         std::cout << std::endl;
         return ;
     }
 
-    resultFile << "move1,move2,"
-               << "CONSTANT,DEPTH_BREADTH,INFL_PIECES,LEGAL_MOVES,"
-               << "REC_LEGAL_MOVES,EXPANDABLE_STATES,REC_EXPANDABLE_STATES,"
-               << "trap\n";
+    std::string resultDir = "..\\test\\result_child_" + getTimeStamp();
+    const char *path = resultDir.c_str();
+    int check = mkdir(path);
+    if (check) {
+        std::cout << "[ERROR] Unable to create the result directory." ;
+        std::cout << std::endl;
+        return ;
+    }
 
     std::string rootFen;
+    std::ofstream resultFile;
     double sim;
+    int fenCounter = 1;
 
     while(getline(testFile, rootFen)) {
+        std::string resultName = resultDir + "\\fen_" + std::to_string(fenCounter) + ".csv";
+        resultFile.open(resultName);
+
+        resultFile << "move1,move2,"
+                   << "CONSTANT,DEPTH_BREADTH,INFL_PIECES,LEGAL_MOVES,"
+                   << "REC_LEGAL_MOVES,EXPANDABLE_STATES,REC_EXPANDABLE_STATES,"
+                   << "trap\n";
+
         Position *rootPos  = new Position(rootFen, false, 0);
         if (rootPos->get_key()==0) continue;
 
@@ -190,12 +199,11 @@ void childTest() {
                 resultFile << (isTrap(grandPos) ? 1 : 0) << std::endl;
             }
         }
-
-        resultFile << std::endl;
+        fenCounter++;
+        resultFile.close();
     }
     testFile.close();
-    resultFile.close();
-    std::cout << "[INFO] Results of children tests exported to: " << resultName << std::endl;
+    std::cout << "[INFO] Results of children tests exported to " << resultDir << std::endl;
 }
 
 /**
@@ -293,15 +301,40 @@ std::string trapPersistence(std::string fen1, std::string fen2) {
  * @return true if the trap is present, false otherwise
  */
 bool isTrap(Position *pos) {
-    StateInfo st;
-    std::vector<MoveStack> ms = getMoves(pos);
-    for (MoveStack m : ms) {
-        pos->do_move(m.move, st);
-        if (pos->is_trap() || pos->is_mate()) {
-            pos->undo_move(m.move);
-            return true;
+    StateInfo st, st2, st3, st4;
+    std::vector<MoveStack> us_1_v = getMoves(pos);
+
+    for (MoveStack us_1 : us_1_v) { // examine if any of our moves leads to a 3 move win for the opponent
+        pos->do_move(us_1.move, st);
+        std::vector<MoveStack> op_2_v = getMoves(pos);
+
+        for (MoveStack op_2 : op_2_v) {
+            pos->do_move(op_2.move, st2);
+            std::vector<MoveStack> us_3_v = getMoves(pos);
+
+            int trapCount = 0;
+            for (MoveStack us_3 : us_3_v) {
+                pos->do_move(us_3.move, st3);
+                std::vector<MoveStack> op_4_v = getMoves(pos);
+
+                for (MoveStack op_4 : op_4_v) {
+                    pos->do_move(op_4.move, st4);
+                    if (pos->is_mate()) {
+                        trapCount++;
+                        pos->undo_move(op_4.move); break;
+                    }
+                    pos->undo_move(op_4.move);
+                }
+                pos->undo_move(us_3.move);
+            }
+            if (!us_3_v.empty() && us_3_v.size() == trapCount) {
+                pos->undo_move(op_2.move);
+                pos->undo_move(us_1.move);
+                return true;    // regardless of our move the opponent wins
+            }
+            pos->undo_move(op_2.move);
         }
-        pos->undo_move(m.move);
+        pos->undo_move(us_1.move);
     }
     return false;
 }
